@@ -1,31 +1,11 @@
 {
   "totals": {
-    "changed": 19,
+    "changed": 17,
     "added": 2,
     "removed": 0,
-    "unchanged": 47
+    "unchanged": 45
   },
   "items": [
-    {
-      "id": "ui-badge--all-variants",
-      "title": "UI/Badge",
-      "name": "All Variants",
-      "theme": "dark",
-      "key": "ui-badge--all-variants__dark",
-      "status": "unchanged",
-      "diffPixels": 0,
-      "ratio": 0
-    },
-    {
-      "id": "ui-badge--all-variants",
-      "title": "UI/Badge",
-      "name": "All Variants",
-      "theme": "light",
-      "key": "ui-badge--all-variants__light",
-      "status": "unchanged",
-      "diffPixels": 0,
-      "ratio": 0
-    },
     {
       "id": "ui-badge--default",
       "title": "UI/Badge",
@@ -125,38 +105,6 @@
       "status": "unchanged",
       "diffPixels": 0,
       "ratio": 0
-    },
-    {
-      "id": "ui-button--all-variants",
-      "title": "UI/Button",
-      "name": "All Variants",
-      "theme": "dark",
-      "key": "ui-button--all-variants__dark",
-      "status": "changed",
-      "diffPixels": 1216,
-      "ratio": 0.009654471544715448,
-      "sizeChanged": false,
-      "images": {
-        "before": "ui-button--all-variants__dark.before.png",
-        "after": "ui-button--all-variants__dark.after.png",
-        "diff": "ui-button--all-variants__dark.diff.png"
-      }
-    },
-    {
-      "id": "ui-button--all-variants",
-      "title": "UI/Button",
-      "name": "All Variants",
-      "theme": "light",
-      "key": "ui-button--all-variants__light",
-      "status": "changed",
-      "diffPixels": 346,
-      "ratio": 0.0027470782520325203,
-      "sizeChanged": false,
-      "images": {
-        "before": "ui-button--all-variants__light.before.png",
-        "after": "ui-button--all-variants__light.after.png",
-        "diff": "ui-button--all-variants__light.diff.png"
-      }
     },
     {
       "id": "ui-button--default",
