@@ -122,7 +122,6 @@ const MAX_OPEN = parseInt(process.env.MAX_OPEN || '8', 10);
 
 const imgUrl = (f: string): string => `${server}/${repo}/raw/${snapSha}/${prefix}/${f}`;
 const img = (f: string, w = 260): string => `<img src="${imgUrl(f)}" width="${w}" alt="">`;
-const pct = (r: number): string => `${(r * 100).toFixed(2)}%`;
 const titleOf = (i: ReportItem): string => `${i.title} › ${i.name} · <i>${i.theme}</i>`;
 const tableRow = (i: ReportItem): string =>
   `| Before | After | Diff |\n| :--: | :--: | :--: |\n| ${img(i.images!.before!)} | ${img(i.images!.after!)} | ${img(i.images!.diff!)} |\n\n`;
@@ -169,9 +168,9 @@ if (!hasDiffs) {
   if (needs.length) {
     body += `### 🔴 Changed — needs approval\n\n`;
     needs.slice(0, MAX_RENDER).forEach((i, idx) => {
-      const sz = i.sizeChanged ? ' · size changed' : '';
+      const suffix = i.sizeChanged ? ' — size changed' : '';
       const open = idx < MAX_OPEN ? ' open' : '';
-      body += `<details${open}>\n<summary><b>${titleOf(i)}</b> — ${i.diffPixels!.toLocaleString()} px (${pct(i.ratio!)})${sz}</summary>\n\n`;
+      body += `<details${open}>\n<summary><b>${titleOf(i)}</b>${suffix}</summary>\n\n`;
       body += tableRow(i);
       body += `Approve this story: \`approve changes ${i.title} › ${i.name}\`\n\n`;
       body += `</details>\n\n`;
@@ -182,7 +181,7 @@ if (!hasDiffs) {
   if (okChanged.length) {
     body += `### ✅ Changed — approved\n\n`;
     for (const i of okChanged.slice(0, MAX_RENDER)) {
-      body += `<details>\n<summary>✅ <b>${titleOf(i)}</b> — ${i.diffPixels!.toLocaleString()} px (${pct(i.ratio!)})</summary>\n\n`;
+      body += `<details>\n<summary>✅ <b>${titleOf(i)}</b></summary>\n\n`;
       body += tableRow(i);
       body += `</details>\n\n`;
     }
