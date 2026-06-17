@@ -21,6 +21,8 @@ permissions:
 env:
   THEMES: light,dark
   SNAP_BRANCH: vrt-snapshots
+  # Node 24 strips TypeScript types from the .mts scripts natively; silence the notice.
+  NODE_OPTIONS: --disable-warning=ExperimentalWarning
 
 jobs:
   # Screenshot + diff on every push to a PR.
@@ -36,7 +38,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -47,7 +49,7 @@ jobs:
       - name: Build & screenshot HEAD
         run: |
           pnpm build-storybook --quiet
-          node scripts/visual-regression/capture.mjs \
+          node scripts/visual-regression/capture.mts \
             --static storybook-static --out .vrt/head --themes "$THEMES"
 
       - name: Build & screenshot BASE
@@ -59,12 +61,12 @@ jobs:
           # (cwd-relative) and node_modules resolve to base source + root deps.
           git worktree add --detach .vrt/base-src "$BASE_SHA"
           ( cd .vrt/base-src && node "$ROOT/node_modules/storybook/dist/bin/dispatcher.js" build --quiet --output-dir storybook-static )
-          node scripts/visual-regression/capture.mjs \
+          node scripts/visual-regression/capture.mts \
             --static .vrt/base-src/storybook-static --out .vrt/base --themes "$THEMES"
           git worktree remove --force .vrt/base-src
 
       - name: Diff
-        run: node scripts/visual-regression/diff.mjs --base .vrt/base --head .vrt/head --out .vrt/out
+        run: node scripts/visual-regression/diff.mts --base .vrt/base --head .vrt/head --out .vrt/out
 
       - name: Publish snapshot images
         id: publish
@@ -82,10 +84,10 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           SNAP_SHA: ${{ steps.publish.outputs.snap_sha }}
           SNAP_PATH_PREFIX: ${{ steps.publish.outputs.prefix }}
-        run: node scripts/visual-regression/evaluate.mjs
+        run: node scripts/visual-regression/evaluate.mts
 
   # `approve changes <Component>` comments re-evaluate the gate (no re-screenshot).
-  # Fires on create/edit AND delete — since evaluate.mjs recomputes from the current
+  # Fires on create/edit AND delete — since evaluate.mts recomputes from the current
   # comments, deleting (or editing out) an approval automatically revokes it.
   approve:
     if: >
@@ -98,7 +100,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
       - name: Re-evaluate approvals
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -114,7 +116,7 @@ jobs:
                -H "Accept: application/vnd.github.raw" > .vrt/out/report.json 2>/dev/null && [ -s .vrt/out/report.json ]; then
             SNAP_SHA=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/${SNAP_BRANCH}" --jq .object.sha)
             HEAD_SHA="$HEAD_SHA" SNAP_SHA="$SNAP_SHA" SNAP_PATH_PREFIX="$PREFIX" \
-              node scripts/visual-regression/evaluate.mjs
+              node scripts/visual-regression/evaluate.mts
           else
             echo "No snapshot report for ${PREFIX}; nothing to approve."
           fi
