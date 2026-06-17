@@ -3,42 +3,49 @@ name: Visual regression
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
+  issue_comment:
+    types: [created, edited]
 
-# One run per PR; a new push cancels the in-flight run.
+# Don't cross-cancel: a new push cancels older push runs, comment re-evals
+# cancel older comment runs, but the two never cancel each other.
 concurrency:
-  group: vrt-${{ github.event.pull_request.number }}
+  group: vrt-${{ github.event_name }}-${{ github.event.pull_request.number || github.event.issue.number }}
   cancel-in-progress: true
 
 permissions:
   contents: write # push diff images to the snapshot branch
   pull-requests: write # upsert the sticky comment
+  statuses: write # set the blocking `visual-regression` commit status
 
 env:
   THEMES: light,dark
   SNAP_BRANCH: vrt-snapshots
 
 jobs:
+  # Screenshot + diff on every push to a PR.
   visual-regression:
-    if: github.event.action != 'closed'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # need the base commit to build/screenshot it
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Build & screenshot HEAD
         run: |
-          npm run build-storybook -- --quiet
+          pnpm build-storybook --quiet
           node scripts/visual-regression/capture.mjs \
             --static storybook-static --out .vrt/head --themes "$THEMES"
 
@@ -48,7 +55,7 @@ jobs:
         run: |
           ROOT="$PWD"
           # Build the base branch's Storybook in a nested worktree so its `@/` alias
-          # and node_modules resolve to the base source (cwd) and the root deps.
+          # (cwd-relative) and node_modules resolve to base source + root deps.
           git worktree add --detach .vrt/base-src "$BASE_SHA"
           ( cd .vrt/base-src && node "$ROOT/node_modules/storybook/dist/bin/dispatcher.js" build --quiet --output-dir storybook-static )
           node scripts/visual-regression/capture.mjs \
@@ -65,23 +72,59 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: bash scripts/visual-regression/publish-snapshots.sh
 
-      - name: Upsert PR comment
+      - name: Comment & set blocking status
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           SNAP_SHA: ${{ steps.publish.outputs.snap_sha }}
           SNAP_PATH_PREFIX: ${{ steps.publish.outputs.prefix }}
-          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/visual-regression/comment.mjs
+        run: node scripts/visual-regression/evaluate.mjs
 
-  # When a PR closes/merges, drop its images and collapse the comment.
-  cleanup:
-    if: github.event.action == 'closed'
+  # `approve changes <Component>` comments re-evaluate the gate (no re-screenshot).
+  approve:
+    if: >
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      github.event.comment.user.type != 'Bot' &&
+      contains(github.event.comment.body, 'approve changes')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Re-evaluate approvals
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          HEAD_SHA=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .head.sha)
+          PREFIX="pr-${PR_NUMBER}/${HEAD_SHA}"
+          mkdir -p .vrt/out
+          if gh api "repos/$GITHUB_REPOSITORY/contents/${PREFIX}/report.json?ref=${SNAP_BRANCH}" \
+               -H "Accept: application/vnd.github.raw" > .vrt/out/report.json 2>/dev/null && [ -s .vrt/out/report.json ]; then
+            SNAP_SHA=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/${SNAP_BRANCH}" --jq .object.sha)
+            HEAD_SHA="$HEAD_SHA" SNAP_SHA="$SNAP_SHA" SNAP_PATH_PREFIX="$PREFIX" \
+              node scripts/visual-regression/evaluate.mjs
+          else
+            echo "No snapshot report for ${PREFIX}; nothing to approve."
+          fi
+
+  # When a PR closes/merges, drop its images and collapse the comment.
+  cleanup:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
       - name: Remove this PR's snapshots
         env:
@@ -97,10 +140,11 @@ jobs:
             fi
           fi
 
-      - name: Collapse PR comment
+      - name: Collapse PR comment & clear status
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           MODE: closed
-        run: node scripts/visual-regression/comment.mjs
+        run: node scripts/visual-regression/evaluate.mjs

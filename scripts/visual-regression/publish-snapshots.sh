@@ -31,6 +31,7 @@ apply() {
   rm -rf "${SNAP_DIR:?}/pr-${PR}"
   mkdir -p "$SNAP_DIR/$PREFIX"
   cp "$ROOT"/.vrt/out/*.png "$SNAP_DIR/$PREFIX/" 2>/dev/null || true
+  cp "$ROOT/.vrt/out/report.json" "$SNAP_DIR/$PREFIX/" 2>/dev/null || true # for comment-triggered re-eval
   ( cd "$SNAP_DIR" && git add -A && (git diff --cached --quiet || git commit -q -m "VRT snapshots: PR #${PR} @ ${HEAD_SHA}") )
 }
 
