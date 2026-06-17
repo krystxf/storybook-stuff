@@ -10,11 +10,19 @@ export function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
+// Story names to skip (case-insensitive substring match). Composite stories like
+// "All Variants" duplicate coverage already in the individual variant stories.
+const IGNORE_STORY_NAMES = (process.env.VRT_IGNORE_STORY_NAMES ?? 'All Variants')
+  .split(',')
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+
 /** Read Storybook's built index.json and return the playable (non-docs) stories. */
 export function listStories(staticDir) {
   const idx = readJson(path.join(staticDir, 'index.json'));
   return Object.values(idx.entries)
     .filter((e) => e.type === 'story')
+    .filter((e) => !IGNORE_STORY_NAMES.some((p) => e.name.toLowerCase().includes(p)))
     .map((e) => ({ id: e.id, title: e.title, name: e.name }));
 }
 

@@ -33,6 +33,18 @@ proxied — they load with the viewer's session — so committing images to a br
 same repo and linking them as `github.com/<repo>/raw/<sha>/<path>` renders for anyone with
 repo access, while staying private to everyone else.
 
+### Snapshot storage
+
+Diff images accumulate on the `vrt-snapshots` branch and are **not** auto-removed (each
+push to a PR replaces that PR's own previous images, so only its latest set is kept). They're
+small PNGs, but to reclaim space just delete the branch:
+
+```bash
+git push origin --delete vrt-snapshots
+```
+
+The next PR run recreates it as an orphan; open PRs' comment images repopulate on their next push.
+
 ## Blocking & approvals
 
 - A story whose pixels **changed** sets the `visual-regression` status to **failure** —
@@ -49,6 +61,8 @@ repo access, while staying private to everyone else.
   but GitHub won't hard-block the merge button.
 - Approvals are component/story-level and persist across pushes (re-approval isn't required
   for later commits to the same component).
+- **Revoking:** delete your approval comment (or edit the line out) and the gate
+  re-evaluates immediately — the approval is withdrawn and the status re-blocks if needed.
 
 ## Tuning
 
@@ -57,6 +71,9 @@ repo access, while staying private to everyone else.
 - `PIXELMATCH_THRESHOLD` (default `0.1`) — per-pixel color sensitivity (0–1).
 - `MAX_OPEN` (default `8`) / `MAX_RENDER` (default `60`) — how many changed stories render
   expanded / at all in the comment.
+- `VRT_IGNORE_STORY_NAMES` (default `All Variants`) — comma-separated, case-insensitive
+  substrings; stories whose name matches are skipped (composite stories duplicate the
+  individual variants). Set empty to capture everything.
 
 ## Run the diff locally
 

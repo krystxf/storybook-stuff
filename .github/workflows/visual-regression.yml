@@ -2,15 +2,16 @@ name: Visual regression
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
   issue_comment:
-    types: [created, edited]
+    types: [created, edited, deleted]
 
-# Don't cross-cancel: a new push cancels older push runs, comment re-evals
-# cancel older comment runs, but the two never cancel each other.
+# A new push supersedes older push runs for the same PR. Comment-triggered
+# approval re-evals must NOT cancel each other (each approval must fully process),
+# and the two event types never share a group.
 concurrency:
   group: vrt-${{ github.event_name }}-${{ github.event.pull_request.number || github.event.issue.number }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: write # push diff images to the snapshot branch
@@ -24,7 +25,7 @@ env:
 jobs:
   # Screenshot + diff on every push to a PR.
   visual-regression:
-    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -84,6 +85,8 @@ jobs:
         run: node scripts/visual-regression/evaluate.mjs
 
   # `approve changes <Component>` comments re-evaluate the gate (no re-screenshot).
+  # Fires on create/edit AND delete — since evaluate.mjs recomputes from the current
+  # comments, deleting (or editing out) an approval automatically revokes it.
   approve:
     if: >
       github.event_name == 'issue_comment' &&
@@ -115,36 +118,3 @@ jobs:
           else
             echo "No snapshot report for ${PREFIX}; nothing to approve."
           fi
-
-  # When a PR closes/merges, drop its images and collapse the comment.
-  cleanup:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Remove this PR's snapshots
-        env:
-          PR: ${{ github.event.pull_request.number }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git ls-remote --exit-code --heads origin "$SNAP_BRANCH" >/dev/null 2>&1; then
-            git fetch origin "$SNAP_BRANCH" --depth=1
-            git worktree add -B "$SNAP_BRANCH" .vrt/snap "origin/$SNAP_BRANCH"
-            if [ -d ".vrt/snap/pr-${PR}" ]; then
-              ( cd .vrt/snap && git rm -rq "pr-${PR}" && git commit -q -m "VRT: cleanup PR #${PR}" && git push origin "HEAD:$SNAP_BRANCH" )
-            fi
-          fi
-
-      - name: Collapse PR comment & clear status
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          MODE: closed
-        run: node scripts/visual-regression/evaluate.mjs
