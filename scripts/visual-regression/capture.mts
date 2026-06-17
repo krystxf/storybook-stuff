@@ -1,15 +1,16 @@
 // Screenshot every Storybook story (per theme) from a built `storybook-static` dir.
 //
-//   node capture.mjs --static <storybook-static> --out <dir> [--themes light,dark] [--concurrency 4]
+//   node capture.mts --static <storybook-static> --out <dir> [--themes light,dark] [--concurrency 4]
 //
 // Writes <out>/<storyId>__<theme>.png and <out>/manifest.json.
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { chromium } from 'playwright';
-import { listStories, ensureDir, safe, parseArgs } from './lib.mjs';
+import { listStories, ensureDir, safe, parseArgs, type ManifestEntry } from './lib.mts';
 
-const MIME = {
+const MIME: Record<string, string> = {
   '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript',
   '.css': 'text/css', '.json': 'application/json', '.map': 'application/json',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif',
@@ -18,12 +19,12 @@ const MIME = {
   '.txt': 'text/plain',
 };
 
-function serve(root) {
+function serve(root: string): Promise<http.Server> {
   const resolvedRoot = path.resolve(root);
   return new Promise((resolve) => {
     const server = http.createServer((req, res) => {
       try {
-        let p = decodeURIComponent(req.url.split('?')[0]);
+        let p = decodeURIComponent((req.url ?? '/').split('?')[0]);
         if (p === '/' || p === '') p = '/index.html';
         const file = path.join(resolvedRoot, p);
         if (!file.startsWith(resolvedRoot)) {
@@ -43,29 +44,29 @@ function serve(root) {
 }
 
 const args = parseArgs(process.argv.slice(2));
-const staticDir = args.static;
-const outDir = args.out;
-const themes = String(args.themes || 'light').split(',').map((s) => s.trim()).filter(Boolean);
-const concurrency = parseInt(args.concurrency || '4', 10);
+const staticDir = args.static as string | undefined;
+const outDir = args.out as string | undefined;
+const themes = String(args.themes ?? 'light').split(',').map((s) => s.trim()).filter(Boolean);
+const concurrency = parseInt(String(args.concurrency ?? '4'), 10);
 
 if (!staticDir || !outDir) {
-  console.error('Usage: capture.mjs --static <dir> --out <dir> [--themes light,dark]');
+  console.error('Usage: capture.mts --static <dir> --out <dir> [--themes light,dark]');
   process.exit(1);
 }
 
 ensureDir(outDir);
 const stories = listStories(staticDir);
 const server = await serve(staticDir);
-const { port } = server.address();
+const { port } = server.address() as AddressInfo;
 const browser = await chromium.launch();
 
-const tasks = [];
-for (const s of stories) for (const theme of themes) tasks.push({ s, theme });
+const tasks: { story: typeof stories[number]; theme: string }[] = [];
+for (const story of stories) for (const theme of themes) tasks.push({ story, theme });
 
-const manifest = [];
+const manifest: ManifestEntry[] = [];
 let cursor = 0;
 
-async function worker() {
+async function worker(): Promise<void> {
   const ctx = await browser.newContext({
     viewport: { width: 1280, height: 900 },
     deviceScaleFactor: 2,
@@ -75,9 +76,9 @@ async function worker() {
   for (;;) {
     const t = tasks[cursor++];
     if (!t) break;
-    const { s, theme } = t;
-    const url = `http://127.0.0.1:${port}/iframe.html?id=${encodeURIComponent(s.id)}&viewMode=story&globals=theme:${theme}`;
-    const file = `${safe(s.id)}__${theme}.png`;
+    const { story, theme } = t;
+    const url = `http://127.0.0.1:${port}/iframe.html?id=${encodeURIComponent(story.id)}&viewMode=story&globals=theme:${theme}`;
+    const file = `${safe(story.id)}__${theme}.png`;
     try {
       await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
       // Kill animations/transitions and the blinking caret for stable pixels.
@@ -90,17 +91,17 @@ async function worker() {
 
       const root = await page.$('#storybook-root');
       const box = root && (await root.boundingBox());
-      let buf;
+      let buf: Buffer;
       if (root && box && box.width > 1 && box.height > 1) {
         buf = await root.screenshot({ animations: 'disabled' });
       } else {
         buf = await page.screenshot({ animations: 'disabled', fullPage: true });
       }
-      fs.writeFileSync(path.join(outDir, file), buf);
-      manifest.push({ id: s.id, title: s.title, name: s.name, theme, file });
+      fs.writeFileSync(path.join(outDir!, file), buf);
+      manifest.push({ id: story.id, title: story.title, name: story.name, theme, file });
     } catch (e) {
-      console.error(`  ✗ ${s.id} [${theme}]: ${e.message}`);
-      manifest.push({ id: s.id, title: s.title, name: s.name, theme, file: null, error: e.message });
+      console.error(`  ✗ ${story.id} [${theme}]: ${(e as Error).message}`);
+      manifest.push({ id: story.id, title: story.title, name: story.name, theme, file: null, error: (e as Error).message });
     }
   }
   await ctx.close();

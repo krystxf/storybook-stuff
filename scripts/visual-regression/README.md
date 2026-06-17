@@ -9,20 +9,20 @@ until they're approved with a comment.
 
 On each PR (`.github/workflows/visual-regression.yml`):
 
-1. **Build & screenshot HEAD** — builds `storybook-static`, then `capture.mjs` serves it
+1. **Build & screenshot HEAD** — builds `storybook-static`, then `capture.mts` serves it
    and screenshots every story (light + dark) with Playwright/Chromium.
 2. **Build & screenshot BASE** — checks out the PR's base commit in a nested git worktree,
    builds its Storybook with the root `node_modules`, and screenshots it the same way.
-3. **Diff** — `diff.mjs` compares the two with `pixelmatch`, emitting `before/after/diff`
+3. **Diff** — `diff.mts` compares the two with `pixelmatch`, emitting `before/after/diff`
    PNGs and a `report.json` for every story that changed / was added / was removed.
 4. **Publish images** — `publish-snapshots.sh` commits the diff PNGs (+ `report.json`) to an
    orphan `vrt-snapshots` branch under `pr-<n>/<sha>/`.
-5. **Comment & gate** — `evaluate.mjs` upserts one sticky comment (images embedded via
+5. **Comment & gate** — `evaluate.mts` upserts one sticky comment (images embedded via
    `https://github.com/<owner>/<repo>/raw/<sha>/...` URLs) and sets the
    **`visual-regression` commit status**: `failure` while any changed story is unapproved,
    else `success`.
 
-A separate `approve` job re-runs `evaluate.mjs` when someone comments `approve changes …`
+A separate `approve` job re-runs `evaluate.mts` when someone comments `approve changes …`
 (no re-screenshot — it reads the published `report.json`).
 
 ### Why `github.com/.../raw/...` URLs
@@ -77,11 +77,14 @@ The next PR run recreates it as an orphan; open PRs' comment images repopulate o
 
 ## Run the diff locally
 
+The scripts are TypeScript (`.mts`) run directly via Node's native type stripping —
+**Node ≥ 24** (or ≥ 22.18) is required. On older Node, add `--experimental-strip-types`.
+
 ```bash
 pnpm build-storybook
-node scripts/visual-regression/capture.mjs --static storybook-static --out .vrt/head --themes light,dark
+node scripts/visual-regression/capture.mts --static storybook-static --out .vrt/head --themes light,dark
 # ...check out the base revision, rebuild, capture to .vrt/base...
-node scripts/visual-regression/diff.mjs --base .vrt/base --head .vrt/head --out .vrt/out
+node scripts/visual-regression/diff.mts --base .vrt/base --head .vrt/head --out .vrt/out
 DRY_RUN=1 GITHUB_TOKEN=x GITHUB_REPOSITORY=o/r PR_NUMBER=1 \
-  SNAP_SHA=abc SNAP_PATH_PREFIX=pr-1/abc node scripts/visual-regression/evaluate.mjs
+  SNAP_SHA=abc SNAP_PATH_PREFIX=pr-1/abc node scripts/visual-regression/evaluate.mts
 ```
