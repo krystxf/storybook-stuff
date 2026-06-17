@@ -1,0 +1,668 @@
+{
+  "totals": {
+    "changed": 6,
+    "added": 0,
+    "removed": 0,
+    "unchanged": 56
+  },
+  "items": [
+    {
+      "id": "ui-badge--default",
+      "title": "UI/Badge",
+      "name": "Default",
+      "theme": "dark",
+      "key": "ui-badge--default__dark",
+      "status": "changed",
+      "diffPixels": 108,
+      "ratio": 0.005879790940766551,
+      "sizeChanged": false,
+      "images": {
+        "before": "ui-badge--default__dark.before.png",
+        "after": "ui-badge--default__dark.after.png",
+        "diff": "ui-badge--default__dark.diff.png"
+      }
+    },
+    {
+      "id": "ui-badge--default",
+      "title": "UI/Badge",
+      "name": "Default",
+      "theme": "light",
+      "key": "ui-badge--default__light",
+      "status": "changed",
+      "diffPixels": 112,
+      "ratio": 0.006097560975609756,
+      "sizeChanged": false,
+      "images": {
+        "before": "ui-badge--default__light.before.png",
+        "after": "ui-badge--default__light.after.png",
+        "diff": "ui-badge--default__light.diff.png"
+      }
+    },
+    {
+      "id": "ui-badge--destructive",
+      "title": "UI/Badge",
+      "name": "Destructive",
+      "theme": "dark",
+      "key": "ui-badge--destructive__dark",
+      "status": "changed",
+      "diffPixels": 114,
+      "ratio": 0.006206445993031359,
+      "sizeChanged": false,
+      "images": {
+        "before": "ui-badge--destructive__dark.before.png",
+        "after": "ui-badge--destructive__dark.after.png",
+        "diff": "ui-badge--destructive__dark.diff.png"
+      }
+    },
+    {
+      "id": "ui-badge--destructive",
+      "title": "UI/Badge",
+      "name": "Destructive",
+      "theme": "light",
+      "key": "ui-badge--destructive__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-badge--outline",
+      "title": "UI/Badge",
+      "name": "Outline",
+      "theme": "dark",
+      "key": "ui-badge--outline__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-badge--outline",
+      "title": "UI/Badge",
+      "name": "Outline",
+      "theme": "light",
+      "key": "ui-badge--outline__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-badge--secondary",
+      "title": "UI/Badge",
+      "name": "Secondary",
+      "theme": "dark",
+      "key": "ui-badge--secondary__dark",
+      "status": "changed",
+      "diffPixels": 116,
+      "ratio": 0.006315331010452962,
+      "sizeChanged": false,
+      "images": {
+        "before": "ui-badge--secondary__dark.before.png",
+        "after": "ui-badge--secondary__dark.after.png",
+        "diff": "ui-badge--secondary__dark.diff.png"
+      }
+    },
+    {
+      "id": "ui-badge--secondary",
+      "title": "UI/Badge",
+      "name": "Secondary",
+      "theme": "light",
+      "key": "ui-badge--secondary__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-badge--with-icon",
+      "title": "UI/Badge",
+      "name": "With Icon",
+      "theme": "dark",
+      "key": "ui-badge--with-icon__dark",
+      "status": "changed",
+      "diffPixels": 108,
+      "ratio": 0.004548517520215634,
+      "sizeChanged": false,
+      "images": {
+        "before": "ui-badge--with-icon__dark.before.png",
+        "after": "ui-badge--with-icon__dark.after.png",
+        "diff": "ui-badge--with-icon__dark.diff.png"
+      }
+    },
+    {
+      "id": "ui-badge--with-icon",
+      "title": "UI/Badge",
+      "name": "With Icon",
+      "theme": "light",
+      "key": "ui-badge--with-icon__light",
+      "status": "changed",
+      "diffPixels": 112,
+      "ratio": 0.0047169811320754715,
+      "sizeChanged": false,
+      "images": {
+        "before": "ui-badge--with-icon__light.before.png",
+        "after": "ui-badge--with-icon__light.after.png",
+        "diff": "ui-badge--with-icon__light.diff.png"
+      }
+    },
+    {
+      "id": "ui-button--default",
+      "title": "UI/Button",
+      "name": "Default",
+      "theme": "dark",
+      "key": "ui-button--default__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--default",
+      "title": "UI/Button",
+      "name": "Default",
+      "theme": "light",
+      "key": "ui-button--default__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--destructive",
+      "title": "UI/Button",
+      "name": "Destructive",
+      "theme": "dark",
+      "key": "ui-button--destructive__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--destructive",
+      "title": "UI/Button",
+      "name": "Destructive",
+      "theme": "light",
+      "key": "ui-button--destructive__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--disabled",
+      "title": "UI/Button",
+      "name": "Disabled",
+      "theme": "dark",
+      "key": "ui-button--disabled__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--disabled",
+      "title": "UI/Button",
+      "name": "Disabled",
+      "theme": "light",
+      "key": "ui-button--disabled__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--ghost",
+      "title": "UI/Button",
+      "name": "Ghost",
+      "theme": "dark",
+      "key": "ui-button--ghost__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--ghost",
+      "title": "UI/Button",
+      "name": "Ghost",
+      "theme": "light",
+      "key": "ui-button--ghost__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--icon-only",
+      "title": "UI/Button",
+      "name": "Icon Only",
+      "theme": "dark",
+      "key": "ui-button--icon-only__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--icon-only",
+      "title": "UI/Button",
+      "name": "Icon Only",
+      "theme": "light",
+      "key": "ui-button--icon-only__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--link",
+      "title": "UI/Button",
+      "name": "Link",
+      "theme": "dark",
+      "key": "ui-button--link__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--link",
+      "title": "UI/Button",
+      "name": "Link",
+      "theme": "light",
+      "key": "ui-button--link__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--outline",
+      "title": "UI/Button",
+      "name": "Outline",
+      "theme": "dark",
+      "key": "ui-button--outline__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--outline",
+      "title": "UI/Button",
+      "name": "Outline",
+      "theme": "light",
+      "key": "ui-button--outline__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--secondary",
+      "title": "UI/Button",
+      "name": "Secondary",
+      "theme": "dark",
+      "key": "ui-button--secondary__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--secondary",
+      "title": "UI/Button",
+      "name": "Secondary",
+      "theme": "light",
+      "key": "ui-button--secondary__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--sizes",
+      "title": "UI/Button",
+      "name": "Sizes",
+      "theme": "dark",
+      "key": "ui-button--sizes__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--sizes",
+      "title": "UI/Button",
+      "name": "Sizes",
+      "theme": "light",
+      "key": "ui-button--sizes__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--with-icon",
+      "title": "UI/Button",
+      "name": "With Icon",
+      "theme": "dark",
+      "key": "ui-button--with-icon__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-button--with-icon",
+      "title": "UI/Button",
+      "name": "With Icon",
+      "theme": "light",
+      "key": "ui-button--with-icon__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-card--default",
+      "title": "UI/Card",
+      "name": "Default",
+      "theme": "dark",
+      "key": "ui-card--default__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-card--default",
+      "title": "UI/Card",
+      "name": "Default",
+      "theme": "light",
+      "key": "ui-card--default__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-card--simple",
+      "title": "UI/Card",
+      "name": "Simple",
+      "theme": "dark",
+      "key": "ui-card--simple__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-card--simple",
+      "title": "UI/Card",
+      "name": "Simple",
+      "theme": "light",
+      "key": "ui-card--simple__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-card--small",
+      "title": "UI/Card",
+      "name": "Small",
+      "theme": "dark",
+      "key": "ui-card--small__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-card--small",
+      "title": "UI/Card",
+      "name": "Small",
+      "theme": "light",
+      "key": "ui-card--small__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-dialog--confirmation",
+      "title": "UI/Dialog",
+      "name": "Confirmation",
+      "theme": "dark",
+      "key": "ui-dialog--confirmation__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-dialog--confirmation",
+      "title": "UI/Dialog",
+      "name": "Confirmation",
+      "theme": "light",
+      "key": "ui-dialog--confirmation__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-dialog--default",
+      "title": "UI/Dialog",
+      "name": "Default",
+      "theme": "dark",
+      "key": "ui-dialog--default__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-dialog--default",
+      "title": "UI/Dialog",
+      "name": "Default",
+      "theme": "light",
+      "key": "ui-dialog--default__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-input--default",
+      "title": "UI/Input",
+      "name": "Default",
+      "theme": "dark",
+      "key": "ui-input--default__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-input--default",
+      "title": "UI/Input",
+      "name": "Default",
+      "theme": "light",
+      "key": "ui-input--default__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-input--disabled",
+      "title": "UI/Input",
+      "name": "Disabled",
+      "theme": "dark",
+      "key": "ui-input--disabled__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-input--disabled",
+      "title": "UI/Input",
+      "name": "Disabled",
+      "theme": "light",
+      "key": "ui-input--disabled__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-input--invalid",
+      "title": "UI/Input",
+      "name": "Invalid",
+      "theme": "dark",
+      "key": "ui-input--invalid__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-input--invalid",
+      "title": "UI/Input",
+      "name": "Invalid",
+      "theme": "light",
+      "key": "ui-input--invalid__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-input--password",
+      "title": "UI/Input",
+      "name": "Password",
+      "theme": "dark",
+      "key": "ui-input--password__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-input--password",
+      "title": "UI/Input",
+      "name": "Password",
+      "theme": "light",
+      "key": "ui-input--password__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-input--with-label",
+      "title": "UI/Input",
+      "name": "With Label",
+      "theme": "dark",
+      "key": "ui-input--with-label__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-input--with-label",
+      "title": "UI/Input",
+      "name": "With Label",
+      "theme": "light",
+      "key": "ui-input--with-label__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-switch--checked",
+      "title": "UI/Switch",
+      "name": "Checked",
+      "theme": "dark",
+      "key": "ui-switch--checked__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-switch--checked",
+      "title": "UI/Switch",
+      "name": "Checked",
+      "theme": "light",
+      "key": "ui-switch--checked__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-switch--default",
+      "title": "UI/Switch",
+      "name": "Default",
+      "theme": "dark",
+      "key": "ui-switch--default__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-switch--default",
+      "title": "UI/Switch",
+      "name": "Default",
+      "theme": "light",
+      "key": "ui-switch--default__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-switch--disabled-checked",
+      "title": "UI/Switch",
+      "name": "Disabled Checked",
+      "theme": "dark",
+      "key": "ui-switch--disabled-checked__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-switch--disabled-checked",
+      "title": "UI/Switch",
+      "name": "Disabled Checked",
+      "theme": "light",
+      "key": "ui-switch--disabled-checked__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-switch--disabled",
+      "title": "UI/Switch",
+      "name": "Disabled",
+      "theme": "dark",
+      "key": "ui-switch--disabled__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-switch--disabled",
+      "title": "UI/Switch",
+      "name": "Disabled",
+      "theme": "light",
+      "key": "ui-switch--disabled__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-switch--small",
+      "title": "UI/Switch",
+      "name": "Small",
+      "theme": "dark",
+      "key": "ui-switch--small__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-switch--small",
+      "title": "UI/Switch",
+      "name": "Small",
+      "theme": "light",
+      "key": "ui-switch--small__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-switch--with-label",
+      "title": "UI/Switch",
+      "name": "With Label",
+      "theme": "dark",
+      "key": "ui-switch--with-label__dark",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    },
+    {
+      "id": "ui-switch--with-label",
+      "title": "UI/Switch",
+      "name": "With Label",
+      "theme": "light",
+      "key": "ui-switch--with-label__light",
+      "status": "unchanged",
+      "diffPixels": 0,
+      "ratio": 0
+    }
+  ],
+  "minPixels": 20,
+  "threshold": 0.1
+}
