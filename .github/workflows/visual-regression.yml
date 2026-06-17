@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   issue_comment:
-    types: [created, edited]
+    types: [created, edited, deleted]
 
 # A new push supersedes older push runs for the same PR. Comment-triggered
 # approval re-evals must NOT cancel each other (each approval must fully process),
@@ -85,6 +85,8 @@ jobs:
         run: node scripts/visual-regression/evaluate.mjs
 
   # `approve changes <Component>` comments re-evaluate the gate (no re-screenshot).
+  # Fires on create/edit AND delete — since evaluate.mjs recomputes from the current
+  # comments, deleting (or editing out) an approval automatically revokes it.
   approve:
     if: >
       github.event_name == 'issue_comment' &&
