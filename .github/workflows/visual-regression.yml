@@ -1,0 +1,106 @@
+name: Visual regression
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+# One run per PR; a new push cancels the in-flight run.
+concurrency:
+  group: vrt-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write # push diff images to the snapshot branch
+  pull-requests: write # upsert the sticky comment
+
+env:
+  THEMES: light,dark
+  SNAP_BRANCH: vrt-snapshots
+
+jobs:
+  visual-regression:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need the base commit to build/screenshot it
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build & screenshot HEAD
+        run: |
+          npm run build-storybook -- --quiet
+          node scripts/visual-regression/capture.mjs \
+            --static storybook-static --out .vrt/head --themes "$THEMES"
+
+      - name: Build & screenshot BASE
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          ROOT="$PWD"
+          # Build the base branch's Storybook in a nested worktree so its `@/` alias
+          # and node_modules resolve to the base source (cwd) and the root deps.
+          git worktree add --detach .vrt/base-src "$BASE_SHA"
+          ( cd .vrt/base-src && node "$ROOT/node_modules/storybook/dist/bin/dispatcher.js" build --quiet --output-dir storybook-static )
+          node scripts/visual-regression/capture.mjs \
+            --static .vrt/base-src/storybook-static --out .vrt/base --themes "$THEMES"
+          git worktree remove --force .vrt/base-src
+
+      - name: Diff
+        run: node scripts/visual-regression/diff.mjs --base .vrt/base --head .vrt/head --out .vrt/out
+
+      - name: Publish snapshot images
+        id: publish
+        env:
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bash scripts/visual-regression/publish-snapshots.sh
+
+      - name: Upsert PR comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SNAP_SHA: ${{ steps.publish.outputs.snap_sha }}
+          SNAP_PATH_PREFIX: ${{ steps.publish.outputs.prefix }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/visual-regression/comment.mjs
+
+  # When a PR closes/merges, drop its images and collapse the comment.
+  cleanup:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Remove this PR's snapshots
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin "$SNAP_BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$SNAP_BRANCH" --depth=1
+            git worktree add -B "$SNAP_BRANCH" .vrt/snap "origin/$SNAP_BRANCH"
+            if [ -d ".vrt/snap/pr-${PR}" ]; then
+              ( cd .vrt/snap && git rm -rq "pr-${PR}" && git commit -q -m "VRT: cleanup PR #${PR}" && git push origin "HEAD:$SNAP_BRANCH" )
+            fi
+          fi
+
+      - name: Collapse PR comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          MODE: closed
+        run: node scripts/visual-regression/comment.mjs
