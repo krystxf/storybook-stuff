@@ -2,7 +2,8 @@
 
 A self-contained, Chromatic-style visual regression check that runs on pull requests
 and posts a **single, auto-updating** comment with before/after/diff images of every
-Storybook story that changed — no external services.
+Storybook story that changed — no external services. Visual **changes block the PR**
+until they're approved with a comment.
 
 ## How it works
 
@@ -14,10 +15,15 @@ On each PR (`.github/workflows/visual-regression.yml`):
    builds its Storybook with the root `node_modules`, and screenshots it the same way.
 3. **Diff** — `diff.mjs` compares the two with `pixelmatch`, emitting `before/after/diff`
    PNGs and a `report.json` for every story that changed / was added / was removed.
-4. **Publish images** — `publish-snapshots.sh` commits the diff PNGs to an orphan
-   `vrt-snapshots` branch under `pr-<n>/<sha>/`.
-5. **Comment** — `comment.mjs` upserts one sticky comment, embedding the images via
-   `https://github.com/<owner>/<repo>/raw/<sha>/...` URLs.
+4. **Publish images** — `publish-snapshots.sh` commits the diff PNGs (+ `report.json`) to an
+   orphan `vrt-snapshots` branch under `pr-<n>/<sha>/`.
+5. **Comment & gate** — `evaluate.mjs` upserts one sticky comment (images embedded via
+   `https://github.com/<owner>/<repo>/raw/<sha>/...` URLs) and sets the
+   **`visual-regression` commit status**: `failure` while any changed story is unapproved,
+   else `success`.
+
+A separate `approve` job re-runs `evaluate.mjs` when someone comments `approve changes …`
+(no re-screenshot — it reads the published `report.json`).
 
 ### Why `github.com/.../raw/...` URLs
 
@@ -26,6 +32,23 @@ auth), so `raw.githubusercontent.com` URLs 404. Images on `github.com` itself ar
 proxied — they load with the viewer's session — so committing images to a branch in this
 same repo and linking them as `github.com/<repo>/raw/<sha>/<path>` renders for anyone with
 repo access, while staying private to everyone else.
+
+## Blocking & approvals
+
+- A story whose pixels **changed** sets the `visual-regression` status to **failure** —
+  the PR is blocked until approved. **Added** and **removed** stories never block.
+- Approve by commenting (one line each, repo owner/member/collaborator only):
+
+  ```
+  approve changes UI/Button            # every variant of the component (both themes)
+  approve changes UI/Button › Default  # a single story
+  ```
+
+- To make this actually prevent merging, add **`visual-regression`** as a required status
+  check in branch protection (Settings → Branches). Without that it still shows a red ✕,
+  but GitHub won't hard-block the merge button.
+- Approvals are component/story-level and persist across pushes (re-approval isn't required
+  for later commits to the same component).
 
 ## Tuning
 
@@ -38,10 +61,10 @@ repo access, while staying private to everyone else.
 ## Run the diff locally
 
 ```bash
-npm run build-storybook
+pnpm build-storybook
 node scripts/visual-regression/capture.mjs --static storybook-static --out .vrt/head --themes light,dark
 # ...check out the base revision, rebuild, capture to .vrt/base...
 node scripts/visual-regression/diff.mjs --base .vrt/base --head .vrt/head --out .vrt/out
 DRY_RUN=1 GITHUB_TOKEN=x GITHUB_REPOSITORY=o/r PR_NUMBER=1 \
-  SNAP_SHA=abc SNAP_PATH_PREFIX=pr-1/abc node scripts/visual-regression/comment.mjs
+  SNAP_SHA=abc SNAP_PATH_PREFIX=pr-1/abc node scripts/visual-regression/evaluate.mjs
 ```
