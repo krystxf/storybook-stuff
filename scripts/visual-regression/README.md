@@ -71,6 +71,9 @@ The next PR run recreates it as an orphan; open PRs' comment images repopulate o
 - `PIXELMATCH_THRESHOLD` (default `0.1`) — per-pixel color sensitivity (0–1).
 - `MAX_OPEN` (default `8`) / `MAX_RENDER` (default `60`) — how many changed stories render
   expanded / at all in the comment.
+- `VRT_IGNORE_STORY_NAMES` (default `All Variants`) — comma-separated, case-insensitive
+  substrings; stories whose name matches are skipped (composite stories duplicate the
+  individual variants). Set empty to capture everything.
 
 ## Run the diff locally
 
