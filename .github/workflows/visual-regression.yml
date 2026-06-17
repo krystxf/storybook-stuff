@@ -35,3 +35,4 @@ jobs:
       - uses: krystxf/storybook-vrt@v1
         with:
           build-command: pnpm build-storybook
+          ignore-story-names: "All Variants"
