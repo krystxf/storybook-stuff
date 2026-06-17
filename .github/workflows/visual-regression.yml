@@ -6,9 +6,6 @@ on:
   issue_comment:
     types: [created, edited, deleted]
 
-# A new push supersedes older push runs for the same PR. Comment-triggered
-# approval re-evals must NOT cancel each other (each approval must fully process),
-# and the two event types never share a group.
 concurrency:
   group: vrt-${{ github.event_name }}-${{ github.event.pull_request.number || github.event.issue.number }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -18,105 +15,23 @@ permissions:
   pull-requests: write # upsert the sticky comment
   statuses: write # set the blocking `visual-regression` commit status
 
-env:
-  THEMES: light,dark
-  SNAP_BRANCH: vrt-snapshots
-  # Node 24 strips TypeScript types from the .mts scripts natively; silence the notice.
-  NODE_OPTIONS: --disable-warning=ExperimentalWarning
-
 jobs:
-  # Screenshot + diff on every push to a PR.
   visual-regression:
-    if: github.event_name == 'pull_request'
+    if: >
+      github.event_name == 'pull_request' ||
+      (github.event.issue.pull_request && github.event.comment.user.type != 'Bot' &&
+       contains(github.event.comment.body, 'approve changes'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # need the base commit to build/screenshot it
-
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
-
       - run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Build & screenshot HEAD
-        run: |
-          pnpm build-storybook --quiet
-          node scripts/visual-regression/capture.mts \
-            --static storybook-static --out .vrt/head --themes "$THEMES"
-
-      - name: Build & screenshot BASE
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: |
-          ROOT="$PWD"
-          # Build the base branch's Storybook in a nested worktree so its `@/` alias
-          # (cwd-relative) and node_modules resolve to base source + root deps.
-          git worktree add --detach .vrt/base-src "$BASE_SHA"
-          ( cd .vrt/base-src && node "$ROOT/node_modules/storybook/dist/bin/dispatcher.js" build --quiet --output-dir storybook-static )
-          node scripts/visual-regression/capture.mts \
-            --static .vrt/base-src/storybook-static --out .vrt/base --themes "$THEMES"
-          git worktree remove --force .vrt/base-src
-
-      - name: Diff
-        run: node scripts/visual-regression/diff.mts --base .vrt/base --head .vrt/head --out .vrt/out
-
-      - name: Publish snapshot images
-        id: publish
-        env:
-          PR: ${{ github.event.pull_request.number }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: bash scripts/visual-regression/publish-snapshots.sh
-
-      - name: Comment & set blocking status
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_SERVER_URL: ${{ github.server_url }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          SNAP_SHA: ${{ steps.publish.outputs.snap_sha }}
-          SNAP_PATH_PREFIX: ${{ steps.publish.outputs.prefix }}
-        run: node scripts/visual-regression/evaluate.mts
-
-  # `approve changes <Component>` comments re-evaluate the gate (no re-screenshot).
-  # Fires on create/edit AND delete — since evaluate.mts recomputes from the current
-  # comments, deleting (or editing out) an approval automatically revokes it.
-  approve:
-    if: >
-      github.event_name == 'issue_comment' &&
-      github.event.issue.pull_request &&
-      github.event.comment.user.type != 'Bot' &&
-      contains(github.event.comment.body, 'approve changes')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: krystxf/storybook-vrt@v1
         with:
-          node-version: 24
-      - name: Re-evaluate approvals
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_SERVER_URL: ${{ github.server_url }}
-          PR_NUMBER: ${{ github.event.issue.number }}
-        run: |
-          HEAD_SHA=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .head.sha)
-          PREFIX="pr-${PR_NUMBER}/${HEAD_SHA}"
-          mkdir -p .vrt/out
-          if gh api "repos/$GITHUB_REPOSITORY/contents/${PREFIX}/report.json?ref=${SNAP_BRANCH}" \
-               -H "Accept: application/vnd.github.raw" > .vrt/out/report.json 2>/dev/null && [ -s .vrt/out/report.json ]; then
-            SNAP_SHA=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/${SNAP_BRANCH}" --jq .object.sha)
-            HEAD_SHA="$HEAD_SHA" SNAP_SHA="$SNAP_SHA" SNAP_PATH_PREFIX="$PREFIX" \
-              node scripts/visual-regression/evaluate.mts
-          else
-            echo "No snapshot report for ${PREFIX}; nothing to approve."
-          fi
+          build-command: pnpm build-storybook
