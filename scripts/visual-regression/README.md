@@ -61,6 +61,8 @@ The next PR run recreates it as an orphan; open PRs' comment images repopulate o
   but GitHub won't hard-block the merge button.
 - Approvals are component/story-level and persist across pushes (re-approval isn't required
   for later commits to the same component).
+- **Revoking:** delete your approval comment (or edit the line out) and the gate
+  re-evaluates immediately — the approval is withdrawn and the status re-blocks if needed.
 
 ## Tuning
 
