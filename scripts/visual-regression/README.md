@@ -33,6 +33,18 @@ proxied — they load with the viewer's session — so committing images to a br
 same repo and linking them as `github.com/<repo>/raw/<sha>/<path>` renders for anyone with
 repo access, while staying private to everyone else.
 
+### Snapshot storage
+
+Diff images accumulate on the `vrt-snapshots` branch and are **not** auto-removed (each
+push to a PR replaces that PR's own previous images, so only its latest set is kept). They're
+small PNGs, but to reclaim space just delete the branch:
+
+```bash
+git push origin --delete vrt-snapshots
+```
+
+The next PR run recreates it as an orphan; open PRs' comment images repopulate on their next push.
+
 ## Blocking & approvals
 
 - A story whose pixels **changed** sets the `visual-regression` status to **failure** —
