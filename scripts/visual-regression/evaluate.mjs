@@ -8,8 +8,7 @@
 //
 // Env: GITHUB_TOKEN, GITHUB_REPOSITORY, PR_NUMBER            (required)
 //      HEAD_SHA (commit the status attaches to; falls back to COMMIT_SHA)
-//      SNAP_SHA, SNAP_PATH_PREFIX, GITHUB_SERVER_URL, REPORT
-//      MODE=closed | DRY_RUN=1
+//      SNAP_SHA, SNAP_PATH_PREFIX, GITHUB_SERVER_URL, REPORT, DRY_RUN=1
 import fs from 'node:fs';
 
 const token = process.env.GITHUB_TOKEN;
@@ -103,20 +102,6 @@ async function setStatus(state, description, target_url) {
   console.log(`status=${state} · ${description}`);
 }
 
-// ---- closed mode -----------------------------------------------------------
-if (process.env.MODE === 'closed') {
-  const body = `${MARKER}\n${HEADING}\n\n🔒 PR closed — visual snapshots cleaned up.`;
-  if (process.env.DRY_RUN) {
-    console.log(body);
-    process.exit(0);
-  }
-  const comments = await fetchComments();
-  await upsert(body, comments);
-  await setStatus('success', 'PR closed', `${server}/${repo}/pull/${pr}`);
-  process.exit(0);
-}
-
-// ---- report mode -----------------------------------------------------------
 const reportPath = process.env.REPORT || '.vrt/out/report.json';
 const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
 const { totals, items } = report;
@@ -162,7 +147,8 @@ if (!hasDiffs) {
 
   if (blocking) {
     const comps = [...new Set(needs.map((i) => i.title))].sort();
-    body += `> [!IMPORTANT]\n> ⛔ **${needs.length} visual change${needs.length > 1 ? 's' : ''} need approval** before this PR can merge.\n\n`;
+    const noun = needs.length > 1 ? 'changes need' : 'change needs';
+    body += `> [!IMPORTANT]\n> ⛔ **${needs.length} visual ${noun} approval** before this PR can merge.\n\n`;
     body += `To approve, comment one line per item (\`approve changes <Component>\` covers all its variants):\n\n`;
     body += '```\n' + comps.map((c) => `approve changes ${c}`).join('\n') + '\n```\n\n';
   } else if (changed.length) {
