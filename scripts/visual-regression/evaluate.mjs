@@ -60,8 +60,16 @@ function parseApprovals(comments) {
   const set = new Set();
   for (const c of comments) {
     if (!c.body || c.body.includes(MARKER)) continue; // skip the bot's own comment
-    if (!APPROVER_ROLES.has(c.author_association)) continue; // only trusted approvers
+    if (c.user && (c.user.type === 'Bot' || /\[bot\]$/i.test(c.user.login || ''))) continue; // never trust bots
+    if (!APPROVER_ROLES.has(c.author_association)) continue; // owners/members/collaborators only
+    // Ignore lines inside ``` fences so our own copy-paste instructions can never self-approve.
+    let inFence = false;
     for (const line of c.body.split(/\r?\n/)) {
+      if (/^\s*```/.test(line)) {
+        inFence = !inFence;
+        continue;
+      }
+      if (inFence) continue;
       const m = line.match(/^\s*approve\s+changes?\s+(.+?)\s*$/i);
       if (m) set.add(norm(m[1]));
     }
