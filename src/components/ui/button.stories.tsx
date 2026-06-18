@@ -44,6 +44,7 @@ export const Ghost: Story = { args: { variant: "ghost" } };
 export const Destructive: Story = { args: { variant: "destructive" } };
 export const Link: Story = { args: { variant: "link" } };
 export const Disabled: Story = { args: { disabled: true } };
+export const Pill: Story = { args: { children: "Pill", variant: "secondary" } };
 
 export const WithIcon: Story = {
   args: {
